@@ -15,26 +15,28 @@ class PostgresStorage(AbstractStorage):
         self.db_con = db_con
 
         # ensure table exists and clean old sessions on startup
-        self._create_table_if_not_exists()
+        #self._create_table_if_not_exists()
+        
         self.cleanup()
 
-    def _create_table_if_not_exists(self):
-        """Create the sessions table if it doesn't exist"""
-        with self.db_con.cursor() as cur:
-            cur.execute("""
-                CREATE TABLE IF NOT EXISTS sessions (
-                    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-                    data bytea NOT NULL,
-                    created_at timestamp DEFAULT CURRENT_TIMESTAMP NULL,
-                    expires_at timestamp NOT NULL
-                )
-            """)
-            # Create index on expires_at for faster cleanup
-            cur.execute("""
-                CREATE INDEX IF NOT EXISTS idx_sessions_expires_at 
-                ON sessions (expires_at)
-            """)
-        self.db_con.commit()
+    # I don't think it's agood idea to give enough right to the client to create a table and index
+    # def _create_table_if_not_exists(self):
+    #     """Create the sessions table if it doesn't exist"""
+    #     with self.db_con.cursor() as cur:
+    #         cur.execute("""
+    #             CREATE TABLE IF NOT EXISTS sessions (
+    #                 id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    #                 data bytea NOT NULL,
+    #                 created_at timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+    #                 expires_at timestamp NOT NULL
+    #             )
+    #         """)
+    #         # Create index on expires_at for faster cleanup
+    #         cur.execute("""
+    #             CREATE INDEX IF NOT EXISTS idx_sessions_expires_at 
+    #             ON sessions (expires_at)
+    #         """)
+    #     self.db_con.commit()
 
     async def load_session(self, request):
         cookie = self.load_cookie(request)
